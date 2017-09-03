@@ -1,6 +1,6 @@
 name: angular_cli
 description: A simple command-line application for scaffolding Dart projects.
-version: 0.0.1
+version: 0.0.2
 author: Jonah Williams <jonahwilliams@google.com>
 homepage: https://github.com/jonahwilliams/angular_cli
 
@@ -8,11 +8,12 @@ environment:
   sdk: '>=1.24.0 <2.0.0'
 
 dependencies:
-  args: "0.13.7"
-  charcode: "1.1.1"
+  args: "^0.13.7"
+  charcode: "^1.1.1"
+  logging: "^0.11.3+1"
 
 dev_dependencies:
   test: ^0.12.0
 
 executables:
-  angular_cli: main.dart
+  angular_cli: main

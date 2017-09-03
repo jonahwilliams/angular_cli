@@ -31,9 +31,7 @@ class ScaffoldCommand extends Command {
           help: 'whether to include a test subdirectory',
           defaultsTo: true)
       ..addOption('name',
-          abbr: 'n',
-          help: 'The HTML name of the component to generate.',
-          defaultsTo: 'my-component');
+          abbr: 'n', help: 'The HTML name of the component to generate.');
   }
 
   @override
@@ -48,20 +46,27 @@ class ScaffoldCommand extends Command {
       ..preserveWhitespace = false
       ..name = argResults['name'];
 
+    if (config.name == null) {
+      throw new Exception('name is required to scaffold a component');
+    }
+    var filename = angular_cli.kebabToSnake(config.name);
+
     _logger.info('Writing scaffold for ${config.name}...');
 
-    var filename = angular_cli.kebabToSnake(config.name);
-    var cssFile = new File('${filename}.css');
-    var htmlFile = new File('${filename}.html');
-    var dartFile = new File('${filename}.dart');
+    var cssFile = new File(
+        [filename, 'lib', '$filename.css'].join(Platform.pathSeparator));
+    var htmlFile = new File(
+        [filename, 'lib', '$filename.html'].join(Platform.pathSeparator));
+    var dartFile = new File(
+        [filename, 'lib', '$filename.dart'].join(Platform.pathSeparator));
 
     _logger.info('creating dart, html, and css files...');
     List<File> files;
     try {
       files = await Future.wait([
-        cssFile.create(),
-        htmlFile.create(),
-        dartFile.create(),
+        cssFile.create(recursive: true),
+        htmlFile.create(recursive: true),
+        dartFile.create(recursive: true),
       ]);
     } on FileSystemException catch (err) {
       _logger.severe('Failed to create files: ${err}');
@@ -74,10 +79,15 @@ class ScaffoldCommand extends Command {
 
     if (argResults['include_tests']) {
       _logger.info('creating test folder...');
-      var testFolder = await new Directory('test').create();
-
-      var testFile = await new File('test/$filename.test.dart').create();
-      await testFile.writeAsString(angular_cli.buildTest(config));
+      try {
+        var testFile = await new File([filename, 'test', '$filename.test.dart']
+                .join(Platform.pathSeparator))
+            .create(recursive: true);
+        await testFile.writeAsString(angular_cli.buildTest(config));
+      } on FileSystemException catch (err) {
+        _logger.severe('Failed to create test files: ${err}');
+        return;
+      }
     }
     _logger.info('All Done!');
   }
